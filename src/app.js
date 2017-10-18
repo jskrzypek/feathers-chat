@@ -6,8 +6,8 @@ const helmet = require('helmet');
 const bodyParser = require('body-parser');
 
 const feathers = require('feathers');
+const expressify = require('feathers-express');
 const configuration = require('feathers-configuration');
-const hooks = require('feathers-hooks');
 const rest = require('feathers-rest');
 const socketio = require('feathers-socketio');
 
@@ -16,8 +16,9 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 
 const authentication = require('./authentication');
+const channels = require('./channels');
 
-const app = feathers();
+const app = expressify(feathers());
 
 // Load app configuration
 app.configure(configuration(path.join(__dirname, '..')));
@@ -29,14 +30,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 // Host the public folder
-app.use('/', feathers.static(app.get('public')));
+app.use('/', expressify.static(app.get('public')));
 
-// Set up Plugins and providers
-app.configure(hooks());
 app.configure(rest());
 app.configure(socketio());
 
 app.configure(authentication);
+app.configure(channels);
 
 // Set up our services (see `services/index.js`)
 app.configure(services);

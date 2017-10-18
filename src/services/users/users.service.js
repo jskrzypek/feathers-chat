@@ -2,7 +2,6 @@
 const createService = require('feathers-nedb');
 const createModel = require('../../models/users.model');
 const hooks = require('./users.hooks');
-const filters = require('./users.filters');
 
 module.exports = function () {
   const app = this;
@@ -23,7 +22,10 @@ module.exports = function () {
 
   service.hooks(hooks);
 
-  if (service.filter) {
-    service.filter(filters);
-  }
+  // For all service events of the user service publish
+  // to the `general` channel but only send `name` and `avatar`
+  service.publish(data => app.channel('general').send({
+    email: data.email,
+    avatar: data.avatar
+  }));
 };
