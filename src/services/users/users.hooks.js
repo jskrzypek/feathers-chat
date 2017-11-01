@@ -2,7 +2,7 @@
 
 const { authenticate } = require('feathers-authentication').hooks;
 const { hashPassword } = require('feathers-authentication-local').hooks;
-const commonHooks  = require('feathers-hooks-common');
+const commonHooks = require('feathers-hooks-common');
 const gravatar = require('../../hooks/gravatar');
 
 module.exports = {
@@ -17,7 +17,23 @@ module.exports = {
   },
 
   after: {
-    all: [commonHooks.when(hook => hook.params.provider, commonHooks.discard('password'))],
+    all: [
+      commonHooks.when(hook => hook.params.provider, commonHooks.discard('password')),
+      commonHooks.populate({
+        schema: {
+          include: [{
+            service: 'messages',
+            nameAs: 'messages',
+            parentField: '_id',
+            childField: 'userId'
+          }, {
+            service: 'chats',
+            nameAs: 'chats',
+            select: (hook, parentItem) => ({ userIds: { $in: [parentItem._id] } })
+          }]
+        }
+      })
+    ],
     find: [],
     get: [],
     create: [],

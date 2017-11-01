@@ -8,20 +8,24 @@ module.exports = function (action) {
     // The authenticated user
     const user = hook.params.user;
     // The actual message text
-    const text = hook.data.text
-      // Messages can't be longer than 400 characters
-      .substring(0, 400)
+    const name = hook.data.name
+    // Messages can't be longer than 400 characters
+      .substring(0, 24)
       // Do some basic HTML escaping
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     const createdAt = action === 'create' ? new Date().getTime() : hook.data.createdAt;
     const updatedAt = action === 'update' ? new Date().getTime() : hook.data.updatedAt;
 
+    const userIds = hook.data.userIds || [];
+    if (!userIds.includes(user._id)) {
+      userIds.push(user._id);
+    }
     // Override the original data
     hook.data = {
-      text,
+      name,
       // Set the user id
-      userId: user._id,
+      userIds,
       createdAt,
       updatedAt
     };
